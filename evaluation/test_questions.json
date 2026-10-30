@@ -1,0 +1,52 @@
+[
+  {
+    "question": "What is the active ingredient in loratadine tablets?",
+    "expected_drug": "Loratadine",
+    "expected_section": "ACTIVE INGREDIENT"
+  },
+  {
+    "question": "What are the contraindications for metformin?",
+    "expected_drug": "Metformin Hydrochloride",
+    "expected_section": "CONTRAINDICATIONS"
+  },
+  {
+    "question": "What is the active ingredient in cetirizine tablets?",
+    "expected_drug": "Cetirizine Hydrochloride",
+    "expected_section": "ACTIVE INGREDIENT"
+  },
+  {
+    "question": "What are the warnings associated with ibuprofen?",
+    "expected_drug": "Ibuprofen",
+    "expected_section": "WARNINGS"
+  },
+  {
+    "question": "What is the purpose of loratadine?",
+    "expected_drug": "Loratadine",
+    "expected_section": "PURPOSE"
+  },
+  {
+    "question": "What are the contraindications for atorvastatin?",
+    "expected_drug": "Atorvastatin Calcium",
+    "expected_section": "CONTRAINDICATIONS"
+  },
+  {
+    "question": "What does the label say about omeprazole?",
+    "expected_drug": "Omeprazole",
+    "expected_section": "INDICATIONS"
+  },
+  {
+    "question": "What warnings are listed for azithromycin?",
+    "expected_drug": "Azithromycin",
+    "expected_section": "WARNINGS"
+  },
+  {
+    "question": "What are the directions for loratadine?",
+    "expected_drug": "Loratadine",
+    "expected_section": "DIRECTIONS"
+  },
+  {
+    "question": "What is metformin used for?",
+    "expected_drug": "Metformin Hydrochloride",
+    "expected_section": "INDICATIONS"
+  }
+]

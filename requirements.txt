@@ -1,0 +1,10 @@
+
+requests
+chromadb
+python-dotenv
+openai
+sentence-transformers
+fastapi
+uvicorn
+pydantic
+langchain-text-splitters

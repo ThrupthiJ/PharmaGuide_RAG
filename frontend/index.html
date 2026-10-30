@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PharmaGuide RAG</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6fb;
+      color: #172033;
+    }
+
+    header {
+      background: #123b5d;
+      color: white;
+      padding: 22px;
+      text-align: center;
+    }
+
+    header h1 { margin: 0 0 8px; }
+    header p { margin: 0; color: #d8e8f5; }
+
+    main {
+      max-width: 850px;
+      margin: 28px auto;
+      padding: 0 16px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 4px 18px #17203312;
+    }
+
+    #question {
+      width: 100%;
+      min-height: 100px;
+      padding: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font: inherit;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 12px;
+      background: #087f8c;
+      color: white;
+      border: 0;
+      padding: 12px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:disabled { opacity: 0.6; cursor: wait; }
+
+    #status { color: #526176; margin-top: 12px; }
+
+    #answer {
+      white-space: pre-wrap;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .source {
+      border-top: 1px solid #e2e8f0;
+      padding: 12px 0;
+    }
+
+    .source a {
+      color: #087f8c;
+      overflow-wrap: anywhere;
+    }
+
+    .disclaimer {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #526176;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      main { margin-top: 16px; }
+      .panel { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PharmaGuide RAG</h1>
+    <p>Pharmaceutical Drug Information Assistant</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Ask about a medicine</h2>
+      <p>Ask about drug-label warnings, adverse reactions,
+         contraindications, or other documented information.</p>
+
+      <form id="chat-form">
+        <textarea id="question"
+          placeholder="Example: What are the warnings and adverse reactions of metformin?"
+          minlength="3" maxlength="1000" required></textarea>
+        <button id="submit-button" type="submit">Ask question</button>
+      </form>
+
+      <p id="status" role="status"></p>
+
+      <section id="result" hidden>
+        <h2>Answer</h2>
+        <div id="answer"></div>
+
+        <h3>Sources</h3>
+        <div id="sources"></div>
+      </section>
+
+      <p class="disclaimer">
+        Educational drug-label information only. This assistant does
+        not replace a qualified healthcare professional. Always verify
+        important information against the current official product label.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "http://127.0.0.1:8000/ask";
+
+    const form = document.getElementById("chat-form");
+    const questionInput = document.getElementById("question");
+    const button = document.getElementById("submit-button");
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+    const answerBox = document.getElementById("answer");
+    const sourcesBox = document.getElementById("sources");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const question = questionInput.value.trim();
+      if (question.length < 3) {
+        status.textContent = "Please enter a longer question.";
+        return;
+      }
+
+      button.disabled = true;
+      status.textContent = "Searching drug-label information...";
+      result.hidden = true;
+      answerBox.textContent = "";
+      sourcesBox.replaceChildren();
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || "The request failed.");
+        }
+
+        answerBox.textContent = data.answer || "No answer was returned.";
+
+        const sources = Array.isArray(data.sources) ? data.sources : [];
+
+        if (sources.length === 0) {
+          sourcesBox.textContent = "No sources were returned.";
+        } else {
+          sources.forEach((source) => {
+            const item = document.createElement("div");
+            item.className = "source";
+
+            const title = document.createElement("strong");
+            title.textContent = source.drug_name || "Drug label";
+            item.appendChild(title);
+
+            const details = document.createElement("p");
+            details.textContent =
+              "Section: " + (source.section || "Not specified") +
+              (source.set_id ? " | Label ID: " + source.set_id : "");
+            item.appendChild(details);
+
+            if (source.source_url) {
+              try {
+                const url = new URL(source.source_url);
+                if (url.protocol === "https:") {
+                  const link = document.createElement("a");
+                  link.href = url.href;
+                  link.target = "_blank";
+                  link.rel = "noopener noreferrer";
+                  link.textContent = "Open official source";
+                  item.appendChild(link);
+                }
+              } catch (_) {
+                // Do not render invalid source URLs as links.
+              }
+            }
+
+            sourcesBox.appendChild(item);
+          });
+        }
+
+        result.hidden = false;
+        status.textContent = "Answer received successfully.";
+      } catch (error) {
+        status.textContent =
+          "Could not get an answer. Check that the API is running at " +
+          "127.0.0.1:8000. Details: " + error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
